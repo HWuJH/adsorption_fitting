@@ -34,14 +34,16 @@ with col2:
     st.subheader('上传N2数据')
     uploaded_file_n2 = st.file_uploader("上传N2数据 CSV 文件", type=["csv"])
 
-# 展示公式
-st.markdown("""
-### Langmuir 等温线（单位点模型）：
-$$ q = \frac{q_{max} K P}{1 + K P} $$
+import matplotlib.pyplot as plt
 
-### 双位点 Langmuir 等温线模型：
-$$ q = \frac{q_{max1} K1 P}{1 + K1 P} + \frac{q_{max2} K2 P}{1 + K2 P} $$
-""")
+def plot_formula():
+    fig, ax = plt.subplots(figsize=(8, 2))
+    ax.text(0.5, 0.5, r"$q = \frac{q_{max} K P}{1 + K P}$", fontsize=20, ha='center', va='center')
+    ax.text(0.5, 0.3, r"$q = \frac{q_{max1} K1 P}{1 + K1 P} + \frac{q_{max2} K2 P}{1 + K2 P}$", fontsize=20, ha='center', va='center')
+    ax.axis('off')
+    st.pyplot(fig)
+
+plot_formula()
 
 # 拟合CO2数据
 if uploaded_file_co2 is not None:
