@@ -28,25 +28,25 @@ if uploaded_file is not None:
     if option == "CO₂":
         # 2️⃣ 处理 CO₂ 数据（去掉 NaN）
         df_clean = df.dropna(subset=["CO2_ads"])
-        P = df_clean["Pressure"].astype(float).values
+        P_CO2 = df_clean["Pressure_CO2"].astype(float).values
         q_CO2 = df_clean["CO2_ads"].astype(float).values
 
         # 3️⃣ 进行拟合
         try:
-            popt, _ = curve_fit(langmuir_dual, P, q_CO2, p0=[1, 1, 1, 1])
+            popt, _ = curve_fit(langmuir_dual, P_CO2, q_CO2, p0=[1, 1, 1, 1])
             q1, b1, q2, b2 = popt
             st.write(f"**拟合参数（CO₂ 双位点吸附）：**")
             st.write(f"q1 = {q1:.4f}, b1 = {b1:.4f}, q2 = {q2:.4f}, b2 = {b2:.4f}")
 
             # 计算 R²
-            q_pred = langmuir_dual(P, *popt)
+            q_pred = langmuir_dual(P_CO2, *popt)
             R2 = 1 - np.sum((q_CO2 - q_pred) ** 2) / np.sum((q_CO2 - np.mean(q_CO2)) ** 2)
             st.write(f"拟合优度 R² = {R2:.4f}")
 
             # 4️⃣ 绘制拟合曲线
             plt.figure(figsize=(6, 4))
-            plt.scatter(P, q_CO2, label="实验数据", color="red")
-            plt.plot(P, q_pred, label="拟合曲线", color="blue")
+            plt.scatter(P_CO2, q_CO2, label="实验数据", color="red")
+            plt.plot(P_CO2, q_pred, label="拟合曲线", color="blue")
             plt.xlabel("压力 P")
             plt.ylabel("吸附量 q")
             plt.title("CO₂ 双位点吸附拟合")
@@ -59,25 +59,25 @@ if uploaded_file is not None:
     elif option == "N₂":
         # 2️⃣ 处理 N₂ 数据（去掉 NaN）
         df_clean = df.dropna(subset=["N2_ads"])
-        P = df_clean["Pressure"].astype(float).values
+        P_N2 = df_clean["Pressure_N2"].astype(float).values
         q_N2 = df_clean["N2_ads"].astype(float).values
 
         # 3️⃣ 进行拟合
         try:
-            popt, _ = curve_fit(langmuir_single, P, q_N2, p0=[1, 1])
+            popt, _ = curve_fit(langmuir_single, P_N2, q_N2, p0=[1, 1])
             qm, b = popt
             st.write(f"**拟合参数（N₂ 单位点吸附）：**")
             st.write(f"qm = {qm:.4f}, b = {b:.4f}")
 
             # 计算 R²
-            q_pred = langmuir_single(P, *popt)
+            q_pred = langmuir_single(P_N2, *popt)
             R2 = 1 - np.sum((q_N2 - q_pred) ** 2) / np.sum((q_N2 - np.mean(q_N2)) ** 2)
             st.write(f"拟合优度 R² = {R2:.4f}")
 
             # 4️⃣ 绘制拟合曲线
             plt.figure(figsize=(6, 4))
-            plt.scatter(P, q_N2, label="实验数据", color="green")
-            plt.plot(P, q_pred, label="拟合曲线", color="orange")
+            plt.scatter(P_N2, q_N2, label="实验数据", color="green")
+            plt.plot(P_N2, q_pred, label="拟合曲线", color="orange")
             plt.xlabel("压力 P")
             plt.ylabel("吸附量 q")
             plt.title("N₂ 单位点吸附拟合")
