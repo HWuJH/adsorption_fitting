@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 
 
 # 设置页面配置
-st.set_page_config(page_title="MOF材料的CO2 和 N2 吸附等温线拟合与可视化", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="吸附等温线拟合", page_icon="🧪", layout="wide")
 
 # Streamlit页面布局
-st.title('CO2 和 N2 吸附等温线拟合与可视化 🌿')
+st.title('MOF材料的CO2 和 N2 吸附等温线拟合与可视化 🌿')
 st.subheader('CO2使用双位点 Langmuir 模型和N2使用单位点 Langmuir 模型')
 
 st.markdown("""
@@ -89,15 +89,28 @@ if uploaded_file_co2 is not None:
     # 显示拟合结果
     st.write(f"CO2拟合结果： qmax1={qmax1:.4f}, K1={K1:.4f}, qmax2={qmax2:.4f}, K2={K2:.4f}, R²={r_squared_co2:.4f}")
 
+    # # 绘制拟合曲线
+    # plt.figure(figsize=(6, 4))
+    # plt.scatter(P_CO2, q_CO2, color='blue', label='Data (CO2)')
+    # plt.plot(P_CO2, result_co2.best_fit, color='red', label='Fitted curve')
+    # plt.xlabel('Pressure (bar)')
+    # plt.ylabel('Excess Adsorption (mol/kg)')
+    # plt.legend()
+    # plt.title('CO2 Excess Adsorption Fitting')
+    # st.pyplot(plt)
+
     # 绘制拟合曲线
-    plt.figure(figsize=(6, 4))
-    plt.scatter(P_CO2, q_CO2, color='blue', label='Data (CO2)')
-    plt.plot(P_CO2, result_co2.best_fit, color='red', label='Fitted curve')
-    plt.xlabel('Pressure (bar)')
-    plt.ylabel('Excess Adsorption (mol/kg)')
-    plt.legend()
-    plt.title('CO2 Excess Adsorption Fitting')
-    st.pyplot(plt)
+    fig_co2, ax_co2 = plt.subplots(figsize=(6, 4))
+    ax_co2.scatter(P_CO2, q_CO2, color='blue', label='Data (CO2)')
+    ax_co2.plot(P_CO2, result_co2.best_fit, color='red', label='Fitted curve')
+    ax_co2.set_xlabel('Pressure (bar)')
+    ax_co2.set_ylabel('Excess Adsorption (mol/kg)')
+    ax_co2.legend()
+    ax_co2.set_title('CO2 Excess Adsorption Fitting')
+
+    # 在左侧列显示CO2拟合图
+    with col1:
+        st.pyplot(fig_co2)
 
 # 拟合N2数据
 if uploaded_file_n2 is not None:
@@ -124,15 +137,28 @@ if uploaded_file_n2 is not None:
     # 显示拟合结果
     st.write(f"N2拟合结果： qmax={qmax_n2:.4f}, K={K_n2:.4f}, R²={r_squared_n2:.4f}")
 
+    # # 绘制拟合曲线
+    # plt.figure(figsize=(6, 4))
+    # plt.scatter(P_N2, q_N2, color='green', label='Data (N2)')
+    # plt.plot(P_N2, result_n2.best_fit, color='orange', label='Fitted curve')
+    # plt.xlabel('Pressure (Pa)')
+    # plt.ylabel('Excess Adsorption (mol/kg)')
+    # plt.legend()
+    # plt.title('N2 Excess Adsorption Fitting')
+    # st.pyplot(plt)
+
     # 绘制拟合曲线
-    plt.figure(figsize=(6, 4))
-    plt.scatter(P_N2, q_N2, color='green', label='Data (N2)')
-    plt.plot(P_N2, result_n2.best_fit, color='orange', label='Fitted curve')
-    plt.xlabel('Pressure (Pa)')
-    plt.ylabel('Excess Adsorption (mol/kg)')
-    plt.legend()
-    plt.title('N2 Excess Adsorption Fitting')
-    st.pyplot(plt)
+    fig_n2, ax_n2 = plt.subplots(figsize=(6, 4))
+    ax_n2.scatter(P_N2, q_N2, color='green', label='Data (N2)')
+    ax_n2.plot(P_N2, result_n2.best_fit, color='orange', label='Fitted curve')
+    ax_n2.set_xlabel('Pressure (Pa)')
+    ax_n2.set_ylabel('Excess Adsorption (mol/kg)')
+    ax_n2.legend()
+    ax_n2.set_title('N2 Excess Adsorption Fitting')
+
+    # 在右侧列显示N2拟合图
+    with col2:
+        st.pyplot(fig_n2)
 
 # 导出拟合结果
 export_button = st.button('导出拟合结果 📂')
