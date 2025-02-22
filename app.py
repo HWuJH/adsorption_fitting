@@ -6,13 +6,6 @@ from lmfit import Model
 import os
 import matplotlib.pyplot as plt
 
-st.markdown("""
-    <style>
-        .main {background-color: #f0f8ff;}
-        .stButton>button {background-color: #90ee90; color: black;}
-    </style>
-""", unsafe_allow_html=True)
-
 
 # 设置页面配置
 st.set_page_config(page_title="MOF材料的CO2 和 N2 吸附等温线拟合与可视化", page_icon="🧪", layout="wide")
@@ -20,6 +13,13 @@ st.set_page_config(page_title="MOF材料的CO2 和 N2 吸附等温线拟合与�
 # Streamlit页面布局
 st.title('CO2 和 N2 吸附等温线拟合与可视化 🌿')
 st.subheader('CO2使用双位点 Langmuir 模型和N2使用单位点 Langmuir 模型')
+
+st.markdown("""
+    <style>
+        .main {background-color: #f0f8ff;}
+        .stButton>button {background-color: #90ee90; color: black;}
+    </style>
+""", unsafe_allow_html=True)
 
 # 定义压力单位转换函数
 def convert_pressure(pressure):
