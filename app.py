@@ -6,6 +6,21 @@ from lmfit import Model
 import os
 import matplotlib.pyplot as plt
 
+st.markdown("""
+    <style>
+        .main {background-color: #f0f8ff;}
+        .stButton>button {background-color: #90ee90; color: black;}
+    </style>
+""", unsafe_allow_html=True)
+
+
+# 设置页面配置
+st.set_page_config(page_title="MOF材料的CO2 和 N2 吸附等温线拟合与可视化", page_icon="🧪", layout="wide")
+
+# Streamlit页面布局
+st.title('CO2 和 N2 吸附等温线拟合与可视化 🌿')
+st.subheader('CO2使用双位点 Langmuir 模型和N2使用单位点 Langmuir 模型')
+
 # 定义压力单位转换函数
 def convert_pressure(pressure):
     return pressure / 100000  # 将压力从Pa转换为bar
@@ -17,9 +32,6 @@ def dual_langmuir_model(P, qmax1, K1, qmax2, K2):
 # 单位点Langmuir模型函数
 def langmuir_model(P, qmax, K):
     return (qmax * K * P) / (1 + K * P)
-
-# Streamlit页面布局
-st.title('CO2 和 N2 数据拟合与可视化')
 
 # 使用st.columns()将页面分为两列
 col1, col2 = st.columns(2)
@@ -123,9 +135,9 @@ if uploaded_file_n2 is not None:
     st.pyplot(plt)
 
 # 导出拟合结果
-export_button = st.button('导出拟合结果')
+export_button = st.button('导出拟合结果 📂')
 if export_button:
-    output_folder = 'D:/Users/ASUS/Desktop/678RASPA2DSL/Fit_Results'
+    output_folder = 'D:/Users/ASUS/Desktop/RASPA2DSL/Fit_Results'
     os.makedirs(output_folder, exist_ok=True)
 
     # 保存CO2拟合结果
