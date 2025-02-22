@@ -34,13 +34,17 @@ with col2:
     st.subheader('上传N2数据')
     uploaded_file_n2 = st.file_uploader("上传N2数据 CSV 文件", type=["csv"])
 
-import matplotlib.pyplot as plt
-
+# 展示吸附等温线公式
 def plot_formula():
     fig, ax = plt.subplots(figsize=(8, 2))
-    ax.text(0.5, 0.5, r"$q = \frac{q_{max} K P}{1 + K P}$", fontsize=20, ha='center', va='center')
+    
+    # 显示第一个公式，适当向上偏移
+    ax.text(0.5, 0.7, r"$q = \frac{q_{max} K P}{1 + K P}$", fontsize=20, ha='center', va='center')
+    
+    # 显示第二个公式，适当向下偏移
     ax.text(0.5, 0.3, r"$q = \frac{q_{max1} K1 P}{1 + K1 P} + \frac{q_{max2} K2 P}{1 + K2 P}$", fontsize=20, ha='center', va='center')
-    ax.axis('off')
+
+    ax.axis('off')  # 关闭坐标轴
     st.pyplot(fig)
 
 plot_formula()
