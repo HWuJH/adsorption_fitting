@@ -1,88 +1,128 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
-from scipy.optimize import curve_fit
+import pandas as pd
+import csv
+from lmfit import Model
+import os
 import matplotlib.pyplot as plt
 
-# 语言吸附等温线方程
-def langmuir_single(P, qm, b):
-    return (qm * b * P) / (1 + b * P)
+# 定义压力单位转换函数
+def convert_pressure(pressure):
+    return pressure / 100000  # 将压力从Pa转换为bar
 
-def langmuir_dual(P, q1, b1, q2, b2):
-    return (q1 * b1 * P) / (1 + b1 * P) + (q2 * b2 * P) / (1 + b2 * P)
+# 双位点Langmuir模型函数
+def dual_langmuir_model(P, qmax1, K1, qmax2, K2):
+    return (qmax1 * K1 * P) / (1 + K1 * P) + (qmax2 * K2 * P) / (1 + K2 * P)
 
-# 1️⃣ 上传 CSV 文件
-st.title("吸附等温线拟合")
-uploaded_file = st.file_uploader("上传 CSV 文件", type=["csv"])
+# 单位点Langmuir模型函数
+def langmuir_model(P, qmax, K):
+    return (qmax * K * P) / (1 + K * P)
+
+# Streamlit用户界面
+st.title('CO2 和 N2 数据拟合与可视化')
+
+# 文件上传
+uploaded_file = st.file_uploader("上传包含CO2和N2数据的CSV文件", type=["csv"])
 
 if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    df.columns = df.columns.str.strip()  # 确保列名无空格
+    data = pd.read_csv(uploaded_file, header=None)
+    data.columns = ['P_CO2', 'q_CO2', 'P_N2', 'q_N2']  # 假设数据是四列
 
-    # 显示 CSV 数据
-    st.write("CSV 数据预览：", df.head())
+    # 显示数据
+    st.write("原始数据：", data)
 
-    # 按钮选择 CO₂ 或 N₂
-    option = st.radio("选择气体进行拟合", ["CO₂", "N₂"])
+    # 选择拟合模型
+    fit_button_co2 = st.button('拟合CO2数据')
+    fit_button_n2 = st.button('拟合N2数据')
 
-    if option == "CO₂":
-        # 2️⃣ 处理 CO₂ 数据（去掉 NaN）
-        df_clean = df.dropna(subset=["CO2_ads"])
-        P_CO2 = df_clean["Pressure_CO2"].astype(float).values
-        q_CO2 = df_clean["CO2_ads"].astype(float).values
+    if fit_button_co2:
+        # CO2拟合
+        P_CO2 = data['P_CO2'].values
+        q_CO2 = data['q_CO2'].values
+        P_CO2 = convert_pressure(P_CO2)  # 转换为bar
 
-        # 3️⃣ 进行拟合
-        try:
-            popt, _ = curve_fit(langmuir_dual, P_CO2, q_CO2, p0=[1, 1, 1, 1])
-            q1, b1, q2, b2 = popt
-            st.write(f"**拟合参数（CO₂ 双位点吸附）：**")
-            st.write(f"q1 = {q1:.4f}, b1 = {b1:.4f}, q2 = {q2:.4f}, b2 = {b2:.4f}")
+        # 创建模型对象
+        model_co2 = Model(dual_langmuir_model)
+        model_co2.set_param_hint('qmax1', value=0.01, min=0)
+        model_co2.set_param_hint('K1', value=0.01, min=0)
+        model_co2.set_param_hint('qmax2', value=0.01, min=0)
+        model_co2.set_param_hint('K2', value=0.01, min=0)
 
-            # 计算 R²
-            q_pred = langmuir_dual(P_CO2, *popt)
-            R2 = 1 - np.sum((q_CO2 - q_pred) ** 2) / np.sum((q_CO2 - np.mean(q_CO2)) ** 2)
-            st.write(f"拟合优度 R² = {R2:.4f}")
+        # 拟合数据
+        result_co2 = model_co2.fit(q_CO2, P=P_CO2*100000)  # 转换压力为Pa
 
-            # 4️⃣ 绘制拟合曲线
-            plt.figure(figsize=(6, 4))
-            plt.scatter(P_CO2, q_CO2, label="实验数据", color="red")
-            plt.plot(P_CO2, q_pred, label="拟合曲线", color="blue")
-            plt.xlabel("压力 P")
-            plt.ylabel("吸附量 q")
-            plt.title("CO₂ 双位点吸附拟合")
-            plt.legend()
-            st.pyplot(plt)
+        # 拟合参数
+        qmax1, K1, qmax2, K2 = result_co2.params['qmax1'].value, result_co2.params['K1'].value, result_co2.params['qmax2'].value, result_co2.params['K2'].value
+        r_squared_co2 = result_co2.rsquared
 
-        except Exception as e:
-            st.error(f"拟合失败: {e}")
+        # 显示拟合结果
+        st.write(f"CO2拟合结果： qmax1={qmax1:.4f}, K1={K1:.4f}, qmax2={qmax2:.4f}, K2={K2:.4f}, R²={r_squared_co2:.4f}")
 
-    elif option == "N₂":
-        # 2️⃣ 处理 N₂ 数据（去掉 NaN）
-        df_clean = df.dropna(subset=["N2_ads"])
-        P_N2 = df_clean["Pressure_N2"].astype(float).values
-        q_N2 = df_clean["N2_ads"].astype(float).values
+        # 绘制拟合曲线
+        plt.figure(figsize=(6, 4))
+        plt.scatter(P_CO2, q_CO2, color='blue', label='Data (CO2)')
+        plt.plot(P_CO2, result_co2.best_fit, color='red', label='Fitted curve')
+        plt.xlabel('Pressure (bar)')
+        plt.ylabel('Excess Adsorption (mol/kg)')
+        plt.legend()
+        plt.title('CO2 Excess Adsorption Fitting')
+        st.pyplot(plt)
 
-        # 3️⃣ 进行拟合
-        try:
-            popt, _ = curve_fit(langmuir_single, P_N2, q_N2, p0=[1, 1])
-            qm, b = popt
-            st.write(f"**拟合参数（N₂ 单位点吸附）：**")
-            st.write(f"qm = {qm:.4f}, b = {b:.4f}")
+    if fit_button_n2:
+        # N2拟合
+        P_N2 = data['P_N2'].values
+        q_N2 = data['q_N2'].values
 
-            # 计算 R²
-            q_pred = langmuir_single(P_N2, *popt)
-            R2 = 1 - np.sum((q_N2 - q_pred) ** 2) / np.sum((q_N2 - np.mean(q_N2)) ** 2)
-            st.write(f"拟合优度 R² = {R2:.4f}")
+        # 创建模型对象
+        model_n2 = Model(langmuir_model)
+        model_n2.set_param_hint('qmax', value=0.01, min=0)
+        model_n2.set_param_hint('K', value=0.01, min=0)
 
-            # 4️⃣ 绘制拟合曲线
-            plt.figure(figsize=(6, 4))
-            plt.scatter(P_N2, q_N2, label="实验数据", color="green")
-            plt.plot(P_N2, q_pred, label="拟合曲线", color="orange")
-            plt.xlabel("压力 P")
-            plt.ylabel("吸附量 q")
-            plt.title("N₂ 单位点吸附拟合")
-            plt.legend()
-            st.pyplot(plt)
+        # 拟合数据
+        result_n2 = model_n2.fit(q_N2, P=P_N2)
 
-        except Exception as e:
-            st.error(f"拟合失败: {e}")
+        # 拟合参数
+        qmax_n2, K_n2 = result_n2.params['qmax'].value, result_n2.params['K'].value
+        r_squared_n2 = result_n2.rsquared
+
+        # 显示拟合结果
+        st.write(f"N2拟合结果： qmax={qmax_n2:.4f}, K={K_n2:.4f}, R²={r_squared_n2:.4f}")
+
+        # 绘制拟合曲线
+        plt.figure(figsize=(6, 4))
+        plt.scatter(P_N2, q_N2, color='green', label='Data (N2)')
+        plt.plot(P_N2, result_n2.best_fit, color='orange', label='Fitted curve')
+        plt.xlabel('Pressure (Pa)')
+        plt.ylabel('Excess Adsorption (mol/kg)')
+        plt.legend()
+        plt.title('N2 Excess Adsorption Fitting')
+        st.pyplot(plt)
+
+# 添加导出功能
+export_button = st.button('导出拟合结果')
+if export_button:
+    # 保存拟合结果到CSV文件
+    output_folder = 'D:/Users/ASUS/Desktop/678RASPA2DSL/Fit_Results'
+    os.makedirs(output_folder, exist_ok=True)
+
+    # 保存CO2拟合结果
+    co2_fit_data = [
+        ['qmax1', 'K1', 'qmax2', 'K2', 'R_squared'],
+        [qmax1, K1, qmax2, K2, r_squared_co2]
+    ]
+    co2_output_path = os.path.join(output_folder, 'CO2_fit_results.csv')
+    with open(co2_output_path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(co2_fit_data)
+
+    # 保存N2拟合结果
+    n2_fit_data = [
+        ['qmax', 'K', 'R_squared'],
+        [qmax_n2, K_n2, r_squared_n2]
+    ]
+    n2_output_path = os.path.join(output_folder, 'N2_fit_results.csv')
+    with open(n2_output_path, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(n2_fit_data)
+
+    st.write(f"拟合结果已保存到 {output_folder}")
