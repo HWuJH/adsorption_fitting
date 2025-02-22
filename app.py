@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import csv
 from lmfit import Model
 import os
 import matplotlib.pyplot as plt
@@ -33,19 +34,13 @@ with col2:
     st.subheader('上传N2数据')
     uploaded_file_n2 = st.file_uploader("上传N2数据 CSV 文件", type=["csv"])
 
-# 显示两个等温线的公式
+# 展示公式
 st.markdown("""
-## 模型公式
+### Langmuir 等温线（单位点模型）：
+$$ q = \frac{q_{max} K P}{1 + K P} $$
 
-### Langmuir等温线（单位点模型）:
-\[
-q = \frac{q_{max} K P}{1 + K P}
-\]
-
-### 双位点Langmuir等温线模型:
-\[
-q = \frac{q_{max1} K1 P}{1 + K1 P} + \frac{q_{max2} K2 P}{1 + K2 P}
-\]
+### 双位点 Langmuir 等温线模型：
+$$ q = \frac{q_{max1} K1 P}{1 + K1 P} + \frac{q_{max2} K2 P}{1 + K2 P} $$
 """)
 
 # 拟合CO2数据
