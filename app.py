@@ -88,7 +88,7 @@ if uploaded_file_co2 is not None:
 
     # 显示拟合结果
     # st.write(f"CO2拟合结果： qmax1={qmax1:.4f}, K1={K1:.4f}, qmax2={qmax2:.4f}, K2={K2:.4f}, R²={r_squared_co2:.4f}")
-    st.write(f"CO2拟合结果： qmax1={qmax1:.4f}, K1={K1}, qmax2={qmax2:.4f}, K2={K2}, R²={r_squared_co2:.4f}")
+    st.write(f"CO2拟合结果： qmax1={qmax1}, K1={K1}, qmax2={qmax2}, K2={K2}, R²={r_squared_co2:.4f}")
 
     # # 绘制拟合曲线
     # plt.figure(figsize=(6, 4))
@@ -136,7 +136,8 @@ if uploaded_file_n2 is not None:
     r_squared_n2 = result_n2.rsquared
 
     # 显示拟合结果
-    st.write(f"N2拟合结果： qmax={qmax_n2:.4f}, K={K_n2:.4f}, R²={r_squared_n2:.4f}")
+    # st.write(f"N2拟合结果： qmax={qmax_n2:.4f}, K={K_n2:.4f}, R²={r_squared_n2:.4f}")
+    st.write(f"N2拟合结果： qmax={qmax_n2}, K={K_n2}, R²={r_squared_n2:.4f}")
 
     # # 绘制拟合曲线
     # plt.figure(figsize=(6, 4))
